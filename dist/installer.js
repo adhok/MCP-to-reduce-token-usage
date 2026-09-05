@@ -6,7 +6,7 @@ function getServerCommand() {
     const serverPath = process.argv[1];
     let isGlobalInPath = false;
     try {
-        execFileSync(process.platform === "win32" ? "where.exe" : "command", process.platform === "win32" ? ["token-saver-mcp"] : ["-v", "token-saver-mcp"], { stdio: "ignore" });
+        execFileSync(process.platform === "win32" ? "where.exe" : "which", ["token-saver-mcp"], { stdio: "ignore" });
         isGlobalInPath = true;
     }
     catch {
@@ -68,7 +68,7 @@ export function getDoctorResult() {
     });
     let packageOnPath = false;
     try {
-        execFileSync(process.platform === "win32" ? "where.exe" : "command", process.platform === "win32" ? ["token-saver-mcp"] : ["-v", "token-saver-mcp"], { stdio: "ignore" });
+        execFileSync(process.platform === "win32" ? "where.exe" : "which", ["token-saver-mcp"], { stdio: "ignore" });
         packageOnPath = true;
     }
     catch {

@@ -19,7 +19,7 @@ function getServerCommand(): { command: string; args: string[] } {
   const serverPath = process.argv[1];
   let isGlobalInPath = false;
   try {
-    execFileSync(process.platform === "win32" ? "where.exe" : "command", process.platform === "win32" ? ["token-saver-mcp"] : ["-v", "token-saver-mcp"], { stdio: "ignore" });
+    execFileSync(process.platform === "win32" ? "where.exe" : "which", ["token-saver-mcp"], { stdio: "ignore" });
     isGlobalInPath = true;
   } catch {
     isGlobalInPath = false;
@@ -85,7 +85,7 @@ export function getDoctorResult(): DoctorResult {
   });
   let packageOnPath = false;
   try {
-    execFileSync(process.platform === "win32" ? "where.exe" : "command", process.platform === "win32" ? ["token-saver-mcp"] : ["-v", "token-saver-mcp"], { stdio: "ignore" });
+    execFileSync(process.platform === "win32" ? "where.exe" : "which", ["token-saver-mcp"], { stdio: "ignore" });
     packageOnPath = true;
   } catch {
     // The server may still be usable through node dist/server.js.
