@@ -59,6 +59,17 @@ function configHasServer(configPath) {
         return false;
     }
 }
+function codexCliHasServer() {
+    if (process.env.TOKEN_SAVER_CODEX_CONFIG)
+        return false;
+    try {
+        execFileSync("codex", ["mcp", "get", "token-saver-mcp"], { stdio: "ignore" });
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
 export function getDoctorResult() {
     const { antigravity, claudeCode, codex } = configPaths();
     const config = (configPath) => ({
@@ -74,9 +85,16 @@ export function getDoctorResult() {
     catch {
         // The server may still be usable through node dist/server.js.
     }
+    const codexCliConfigured = codexCliHasServer();
     return {
         packageOnPath,
-        clients: { antigravity: config(antigravity), claudeCode: config(claudeCode), codex: config(codex) },
+        clients: {
+            antigravity: config(antigravity),
+            claudeCode: config(claudeCode),
+            codex: codexCliConfigured
+                ? { configPath: "Codex CLI configuration", configured: true, configExists: true }
+                : config(codex),
+        },
     };
 }
 export function runDoctor(json = false) {
@@ -116,6 +134,17 @@ export function runUninstaller(options) {
     ];
     let removed = 0;
     for (const [name, path, selected] of paths) {
+        if (name === "codex" && selected && !process.env.TOKEN_SAVER_CODEX_CONFIG && codexCliHasServer()) {
+            try {
+                execFileSync("codex", ["mcp", "remove", "token-saver-mcp"], { stdio: "pipe" });
+                removed++;
+                console.log(`Removed token-saver-mcp from Codex CLI configuration.`);
+                continue;
+            }
+            catch {
+                // Fall through to the direct configuration file fallback.
+            }
+        }
         if (selected && removeFromConfig(path)) {
             removed++;
             console.log(`Removed token-saver-mcp from ${name} (${path}).`);
