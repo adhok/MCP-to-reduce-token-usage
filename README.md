@@ -32,13 +32,65 @@ For Codex, this guidance explicitly asks the agent to call `token-saver-mcp` whe
 
 ## Installation
 
-After publishing the package, install it globally so all local MCP clients can launch the portable command:
+Installation has two separate steps: install the server package, then register it with an MCP client. Registering a client does not install the npm package.
+
+### 1. Install the server
+
+macOS/Linux:
 
 ```sh
 npm install --global token-saver-mcp
 ```
 
-The package exposes the `token-saver-mcp` executable. If the package is not published, clone this repository, run `npm install && npm run build`, and use the absolute path to `dist/server.js` in the client configuration.
+Windows PowerShell:
+
+```powershell
+npm install --global token-saver-mcp
+```
+
+For local development, run `npm install`, `npm run build`, and use `node dist/server.js` instead of the global command.
+
+### 2. Check and register clients
+
+Run the read-only diagnostic first:
+
+```sh
+token-saver-mcp --doctor --json
+```
+
+After reviewing the reported configuration paths, register one or more clients:
+
+```sh
+token-saver-mcp --install --codex --yes
+token-saver-mcp --install --claudecode --yes
+token-saver-mcp --install --antigravity --yes
+```
+
+Use `--all` to configure every supported client. `--yes` is required because registration changes user-level configuration. Restart the client afterward and run `--doctor --json` again to verify it.
+
+To remove only this server’s registration:
+
+```sh
+token-saver-mcp --uninstall --all --yes
+```
+
+On Windows, configuration paths are resolved from the Windows user profile by Node.js. Set `TOKEN_SAVER_ANTIGRAVITY_CONFIG`, `TOKEN_SAVER_CLAUDE_CONFIG`, or `TOKEN_SAVER_CODEX_CONFIG` to override a path when a client uses a non-default location.
+
+### Automatic installation into AI environments
+
+You can automatically register `token-saver-mcp` with your AI coding tools:
+
+```sh
+# Install into all detected environments (Antigravity, Codex CLI, Claude Code)
+npx token-saver-mcp --all
+
+# Or target specific environments:
+npx token-saver-mcp --antigravity
+npx token-saver-mcp --codex
+npx token-saver-mcp --claudecode
+```
+
+The package exposes the `token-saver-mcp` executable. If the package is not published, clone this repository, run `npm install && npm run build`, and use `node dist/server.js <flags>`.
 
 ### Install and test from this repository
 
@@ -80,6 +132,24 @@ The server exposes these tools:
 - `clear_cache(confirm: true)` → remove all local cache entries
 - `read_relevant(filePath, query, contextLines?, maxTokens?)` → read source around a matching symbol with token metadata
 - `code_search(query, directory?, filePattern?, maxResults?, maxTokens?)` → search source files with ranked snippets and token metadata
+
+### Installation diagnostics
+
+Check the local installation and supported client configuration without changing anything:
+
+```sh
+token-saver-mcp --doctor
+token-saver-mcp --doctor --json
+```
+
+Installation and removal require an explicit confirmation flag because they modify user-level configuration:
+
+```sh
+token-saver-mcp --install --all --yes
+token-saver-mcp --uninstall --all --yes
+```
+
+Use `--codex`, `--claudecode`, or `--antigravity` instead of `--all` to target one environment. An `AGENTS.md` file may recommend these commands, but the agent should explain the changes and obtain user approval before running them.
 
 Token metadata is an estimate based on approximately four characters per token. It reports source size, returned size, estimated tokens saved, and savings percentage. `maxTokens` is an approximate response-content budget; exact client/model tokenization may differ.
 

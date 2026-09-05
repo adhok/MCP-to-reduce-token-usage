@@ -9,6 +9,40 @@ import { SessionCache } from "./index/cache.js";
 import { runAndSummarize } from "./tools/runAndSummarize.js";
 import { readRelevant } from "./tools/readRelevant.js";
 import { codeSearch } from "./tools/codeSearch.js";
+import { runDoctor, runInstaller, runUninstaller } from "./installer.js";
+const argv = process.argv.slice(2);
+if (argv.includes("--doctor")) {
+    runDoctor(argv.includes("--json"));
+    process.exit(0);
+}
+if (argv.includes("--uninstall")) {
+    if (!argv.includes("--yes")) {
+        console.error("Uninstallation changes user configuration. Re-run with --yes after reviewing the target environments.");
+        process.exit(2);
+    }
+    runUninstaller({
+        antigravity: argv.includes("--antigravity"),
+        codex: argv.includes("--codex"),
+        claudecode: argv.includes("--claudecode"),
+        all: argv.includes("--all") || !["--antigravity", "--codex", "--claudecode"].some((flag) => argv.includes(flag)),
+    });
+    process.exit(0);
+}
+const hasInstallFlag = argv.some((arg) => ["--install", "--antigravity", "--codex", "--claudecode", "--all", "-i"].includes(arg));
+if (hasInstallFlag) {
+    if (!argv.includes("--yes")) {
+        console.error("Installation changes user configuration. Re-run with --yes after reviewing the target environments.");
+        process.exit(2);
+    }
+    const options = {
+        antigravity: argv.includes("--antigravity"),
+        codex: argv.includes("--codex"),
+        claudecode: argv.includes("--claudecode"),
+        all: argv.includes("--all") || argv.includes("--install") || argv.includes("-i"),
+    };
+    runInstaller(options);
+    process.exit(0);
+}
 const cache = new SessionCache();
 const packageJson = JSON.parse(readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "../package.json"), "utf8"));
 const server = new Server({
