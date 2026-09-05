@@ -1,0 +1,12 @@
+# Local MCP command-output cache; may contain paths, command output, or secrets.
+.token-saver-cache/
+
+# Dependencies and local environment files.
+node_modules/
+.env
+.env.*
+!.env.example
+
+# OS/editor artifacts.
+.DS_Store
+*.swp
