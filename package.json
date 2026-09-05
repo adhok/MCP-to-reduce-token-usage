@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node scripts/test-validation.mjs && node scripts/test-cache.mjs && node scripts/test-token-budget.mjs && node scripts/test-run-and-summarize.mjs && node scripts/test-read-relevant.mjs && node scripts/test-code-search.mjs && node scripts/test-ast-parser.mjs && node scripts/test-installer.mjs",
+    "test": "npm run build && node scripts/test-validation.mjs && node scripts/test-cache.mjs && node scripts/test-token-budget.mjs && node scripts/test-run-and-summarize.mjs && node scripts/test-read-relevant.mjs && node scripts/test-code-search.mjs && node scripts/test-ast-parser.mjs && node scripts/test-installer.mjs && node scripts/test-session-stats.mjs",
     "start": "node dist/server.js",
     "verify:release": "npm test && npm pack --dry-run",
     "prepublishOnly": "npm run build"

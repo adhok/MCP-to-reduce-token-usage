@@ -14,6 +14,7 @@ import { runAndSummarize } from "./tools/runAndSummarize.js";
 import { readRelevant } from "./tools/readRelevant.js";
 import { codeSearch } from "./tools/codeSearch.js";
 import { runDoctor, runInstaller, runUninstaller } from "./installer.js";
+import { SessionStats } from "./index/sessionStats.js";
 
 const argv = process.argv.slice(2);
 if (argv.includes("--doctor")) {
@@ -53,6 +54,7 @@ if (hasInstallFlag) {
 }
 
 const cache = new SessionCache();
+const sessionStats = new SessionStats();
 const packageJson = JSON.parse(readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "../package.json"), "utf8")) as { version: string };
 
 const server = new Server(
@@ -133,6 +135,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: "session_stats",
+      description: "Report estimated context tokens saved during this server session.",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    },
+    {
+      name: "reset_session_stats",
+      description: "Reset estimated token savings counters for this server session.",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    },
+    {
       name: "read_relevant",
       description: "Read the source around a symbol matching a query, or return a symbol table of contents.",
       inputSchema: {
@@ -172,6 +184,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const result = await runAndSummarize(args);
     const { rawOutput: _rawOutput, ...response } = result;
     cache.set(result.fullOutputKey, result.rawOutput, result.summary);
+    sessionStats.record("run_command", result.tokenMetadata);
     return { content: [{ type: "text", text: JSON.stringify(response) }] };
   }
 
@@ -182,6 +195,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
     const fullOutput = cache.getFullContent(args.fullOutputKey);
     if (fullOutput === undefined) throw new Error(`No cached output found for key: ${args.fullOutputKey}`);
+    sessionStats.recordFullOutput(fullOutput);
     return { content: [{ type: "text", text: fullOutput }] };
   }
 
@@ -202,15 +216,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return { content: [{ type: "text", text: JSON.stringify({ deletedEntries }) }] };
   }
 
+  if (request.params.name === "session_stats") {
+    return { content: [{ type: "text", text: JSON.stringify(sessionStats.snapshot()) }] };
+  }
+
+  if (request.params.name === "reset_session_stats") {
+    sessionStats.reset();
+    return { content: [{ type: "text", text: JSON.stringify(sessionStats.snapshot()) }] };
+  }
+
   if (request.params.name === "read_relevant") {
     const args = (request.params.arguments ?? {}) as { filePath: string; query: string; contextLines?: number; maxTokens?: number };
     const result = await readRelevant(args);
+    sessionStats.record("read_relevant", result.tokenMetadata);
     return { content: [{ type: "text", text: JSON.stringify(result) }] };
   }
 
   if (request.params.name === "code_search") {
     const args = (request.params.arguments ?? {}) as { query: string; directory?: string; filePattern?: string; maxResults?: number; maxTokens?: number };
     const result = await codeSearch(args);
+    sessionStats.record("code_search", result.tokenMetadata);
     return { content: [{ type: "text", text: JSON.stringify(result) }] };
   }
 

@@ -101,6 +101,7 @@ The server does not rewrite context already sent to a model. The coding tool cho
 - `read_relevant` returns a focused symbol or bounded text instead of an entire file.
 - `code_search` returns ranked snippets and enclosing symbols.
 - `ping`, `get_full_output`, `cache_stats`, `prune_cache`, and `clear_cache` provide supporting operations.
+- `session_stats` reports estimated savings for the current MCP process; `reset_session_stats` starts the measurement over.
 
 Token counts are approximate, based on roughly four characters per token. AST extraction currently supports TypeScript, JavaScript, and Python.
 
