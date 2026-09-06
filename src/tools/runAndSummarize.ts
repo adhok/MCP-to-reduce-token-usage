@@ -47,9 +47,27 @@ const linesOf = (text: string): string[] => {
 
 function genericSummary(lines: string[]): Summary {
   if (lines.length < 50) return { text: lines.join("\n"), wasSummarized: false };
-  const omitted = lines.length - 40;
+  const importantIndexes = lines
+    .map((line, index) => ({ line, index }))
+    .filter(({ line }) => /\b(?:error|failed|failure|warning|exception|traceback|fatal|panic)\b/i.test(line))
+    .slice(0, 20)
+    .map(({ index }) => index);
+  const preservedIndexes = new Set<number>([
+    ...Array.from({ length: 5 }, (_, index) => index),
+    ...importantIndexes.flatMap((index) => [index - 1, index, index + 1]),
+    ...Array.from({ length: 10 }, (_, index) => lines.length - 10 + index),
+  ].filter((index) => index >= 0 && index < lines.length));
+  const selected = [...preservedIndexes].sort((left, right) => left - right);
+  const output: string[] = [];
+  let previous = -2;
+  for (const index of selected) {
+    if (index > previous + 1) output.push(`... ${index - previous - 1} lines omitted ...`);
+    output.push(lines[index]);
+    previous = index;
+  }
+  const omitted = lines.length - selected.length;
   return {
-    text: [...lines.slice(0, 10), `... ${omitted} lines omitted ...`, ...lines.slice(-30)].join("\n"),
+    text: [...output, `Total omitted lines: ${omitted}`].join("\n"),
     wasSummarized: true,
   };
 }

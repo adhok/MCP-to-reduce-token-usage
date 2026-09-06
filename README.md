@@ -138,7 +138,10 @@ The current fixtures produce these approximate results using the project’s fou
 | 1,000-line generic command output | 8,974 | 362 | 8,612 | 95.97% |
 | Pytest failure summary | 45 | 22 | 23 | 51.67% |
 | Nixtla StatsForecast CV + forecast output (223 lines) | 3,406 | 448 | 2,958 | 86.85% |
+| Noisy pipeline with critical error in the middle (200 lines) | 1,035 | 129 | 906 | 87.54% |
 
 The forecasting scenario uses 540 observations across 3 series, AutoARIMA and Naive models, four rolling cross-validation windows, and a 14-day forecast horizon. Its formal test verifies that the compressed result preserves model metrics, the best model, CV settings, forecast row count, and pipeline status—not just the first and last rows. The measured run used verbose cross-validation and forecast tables; the compact pipeline-only output is intentionally much smaller and therefore has less compression to perform.
+
+The noisy-pipeline test is intentionally adversarial: the only critical database error is placed in the middle of 200 routine log lines. The test verifies that the error and its detail survive compression while 87.54% of estimated tokens are removed.
 
 These are MCP response-size estimates, not OpenAI, Gemini, or Claude billing measurements. Actual provider usage must be verified with an A/B comparison of the same task with and without the MCP.

@@ -26,6 +26,17 @@ test("failing commands preserve exit status and error text", async () => {
   assert.match(result.summary, /fatal database connection error/);
 });
 
+test("generic summaries preserve critical errors in the middle of noisy output", () => {
+  const lines = Array.from({ length: 200 }, (_, index) => `routine log line ${index + 1}`);
+  lines[119] = "ERROR: database migration failed at step 7";
+  lines[120] = "DETAIL: column customer_status does not exist";
+  const result = summarizeOutput("custom_pipeline", lines.join("\n"));
+
+  assert.match(result.text, /database migration failed/);
+  assert.match(result.text, /customer_status does not exist/);
+  assert.ok(result.text.length < lines.join("\n").length / 3);
+});
+
 test("test summaries preserve counts and failures", () => {
   const result = summarizeOutput(
     "pytest",

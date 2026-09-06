@@ -13,7 +13,7 @@ assert.equal(manyLines.wasSummarized, true);
 assert.equal(manyLines.originalLineCount, 120);
 assert.match(manyLines.summary, /line 1/);
 assert.match(manyLines.summary, /line 120/);
-assert.match(manyLines.summary, /80 lines omitted/);
+assert.match(manyLines.summary, /Total omitted lines:/);
 
 const short = await runAndSummarize({ command: "node -e \"console.log('short output')\"" });
 assert.equal(short.exitCode, 0);
