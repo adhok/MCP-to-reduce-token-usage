@@ -17,7 +17,7 @@ export declare function readRelevant({ filePath, query, contextLines, maxTokens,
     matched: boolean;
     symbol: {
         name: string;
-        kind: "function" | "class" | "method" | "interface" | "type";
+        kind: "function" | "class" | "method" | "interface" | "type" | "variable";
         startLine: number;
         endLine: number;
     };
@@ -33,7 +33,7 @@ export declare function readRelevant({ filePath, query, contextLines, maxTokens,
     note: string;
     symbols: {
         name: string;
-        kind: "function" | "class" | "method" | "interface" | "type";
+        kind: "function" | "class" | "method" | "interface" | "type" | "variable";
         startLine: number;
         endLine: number;
     }[];

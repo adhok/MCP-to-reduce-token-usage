@@ -1,7 +1,7 @@
 export type SupportedLanguage = "typescript" | "javascript" | "python";
 export interface Symbol {
     name: string;
-    kind: "function" | "class" | "method" | "interface" | "type";
+    kind: "function" | "class" | "method" | "interface" | "type" | "variable";
     startLine: number;
     endLine: number;
     signature: string;

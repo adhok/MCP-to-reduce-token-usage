@@ -9,7 +9,7 @@ export type SupportedLanguage = "typescript" | "javascript" | "python";
 
 export interface Symbol {
   name: string;
-  kind: "function" | "class" | "method" | "interface" | "type";
+  kind: "function" | "class" | "method" | "interface" | "type" | "variable";
   startLine: number;
   endLine: number;
   signature: string;
@@ -92,6 +92,7 @@ function addObjectMembers(symbols: Symbol[], node: Parser.SyntaxNode, source: st
 
 function addFunctionValue(symbols: Symbol[], node: Parser.SyntaxNode, source: string): void {
   const value = node.childForFieldName("value");
+  addSymbol(symbols, node, source, "variable");
   if (!value) return;
   if (value.type === "object") {
     addObjectMembers(symbols, value, source);

@@ -73,6 +73,7 @@ function addObjectMembers(symbols, node, source) {
 }
 function addFunctionValue(symbols, node, source) {
     const value = node.childForFieldName("value");
+    addSymbol(symbols, node, source, "variable");
     if (!value)
         return;
     if (value.type === "object") {
