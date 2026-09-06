@@ -15,6 +15,12 @@ test("server completes MCP handshake and serves tools", async () => {
     args: [serverPath],
     cwd: process.cwd(),
     env: { ...process.env, TOKEN_SAVER_CACHE_DIR: cacheDirectory },
+    stderr: "pipe",
+  });
+
+  let stderrOutput = "";
+  transport.stderr?.on("data", (chunk) => {
+    stderrOutput += chunk.toString();
   });
 
   try {
@@ -37,6 +43,11 @@ test("server completes MCP handshake and serves tools", async () => {
     const session = JSON.parse(stats.content[0].text);
     assert.equal(session.calls, 1);
     assert.equal(session.byTool.run_command, 1);
+  } catch (error) {
+    if (stderrOutput) {
+      console.error("server stderr:\n" + stderrOutput);
+    }
+    throw error;
   } finally {
     await client.close();
     rmSync(cacheDirectory, { recursive: true, force: true });

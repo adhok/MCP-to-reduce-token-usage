@@ -18,4 +18,5 @@ jobs:
         with:
           node-version: "20"
       - run: npm install
+      - run: node -e "require('better-sqlite3'); console.log('better-sqlite3 OK')"
       - run: npm test
