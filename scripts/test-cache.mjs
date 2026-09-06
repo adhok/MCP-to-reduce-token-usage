@@ -11,9 +11,10 @@ try {
   cache.set("two", "second", "second summary");
   assert.equal(cache.stats().totalEntries, 2);
 
-  await new Promise((resolve) => setTimeout(resolve, 5));
+  await new Promise((resolve) => setTimeout(resolve, 200));
   assert.equal(cache.getFullContent("one"), "first");
-  assert.equal(cache.prune(1), 1);
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(cache.prune(100), 1);
   assert.equal(cache.getFullContent("one"), "first");
   assert.equal(cache.getFullContent("two"), undefined);
 
