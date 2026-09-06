@@ -1,5 +1,7 @@
 # token-saver-mcp
 
+[![CI](https://github.com/adhok/MCP-to-reduce-token-usage/actions/workflows/ci.yml/badge.svg)](https://github.com/adhok/MCP-to-reduce-token-usage/actions/workflows/ci.yml)
+
 An MCP server that helps coding agents use less context when working with command output and source files.
 
 It provides compact command summaries, focused file reads, ranked code search, AST-aware context, and cached full output when needed.
