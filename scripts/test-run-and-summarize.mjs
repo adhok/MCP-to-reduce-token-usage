@@ -43,13 +43,14 @@ const second = await runAndSummarize({ command: identicalCommand });
 assert.notEqual(first.fullOutputKey, second.fullOutputKey);
 
 const cacheDirectory = mkdtempSync(join(tmpdir(), "token-saver-cache-test-"));
+const cache = new SessionCache(join(cacheDirectory, "session.db"));
 try {
-  const cache = new SessionCache(join(cacheDirectory, "session.db"));
   cache.set(first.fullOutputKey, "first", first.summary);
   cache.set(second.fullOutputKey, "second", second.summary);
   assert.equal(cache.getFullContent(first.fullOutputKey), "first");
   assert.equal(cache.getFullContent(second.fullOutputKey), "second");
 } finally {
+  cache.close();
   rmSync(cacheDirectory, { recursive: true, force: true });
 }
 
