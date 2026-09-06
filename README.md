@@ -121,7 +121,7 @@ npm test
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development conventions and [RELEASE.md](RELEASE.md) for publishing instructions.
 
-The test suite uses Node’s built-in test runner and includes scenarios for large-output reduction, failure preservation, forecasting metrics, session accounting, and installation diagnostics.
+The test suite uses Node’s built-in test runner and includes scenarios for large-output reduction, failure preservation, forecasting metrics, session accounting, installation diagnostics, and a real MCP handshake/tool-call integration test.
 
 ### Compression results
 
