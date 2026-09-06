@@ -35,12 +35,12 @@ function testSummary(lines, kind) {
     const text = lines.join("\n");
     const counts = [];
     const countPatterns = kind === "pytest"
-        ? [/([\d,]+) passed/i, /([\d,]+) failed/i, /([\d,]+) error/i, /([\d,]+) skipped/i]
-        : [/([\d,]+) passed/i, /([\d,]+) failed/i, /([\d,]+) todo/i];
-    for (const pattern of countPatterns) {
+        ? [[/([\d,]+) passed/i, "passed"], [/([\d,]+) failed/i, "failed"], [/([\d,]+) error/i, "errors"], [/([\d,]+) skipped/i, "skipped"]]
+        : [[/([\d,]+) passed/i, "passed"], [/([\d,]+) failed/i, "failed"], [/([\d,]+) todo/i, "todo"]];
+    for (const [pattern, label] of countPatterns) {
         const match = text.match(pattern);
         if (match)
-            counts.push(`${match[1]} ${pattern.source.match(/\\w+/)?.[0] ?? "tests"}`);
+            counts.push(`${match[1]} ${label}`);
     }
     const failures = [];
     if (kind === "pytest") {

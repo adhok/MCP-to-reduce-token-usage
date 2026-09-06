@@ -57,12 +57,12 @@ function genericSummary(lines: string[]): Summary {
 function testSummary(lines: string[], kind: "pytest" | "jest"): Summary {
   const text = lines.join("\n");
   const counts: string[] = [];
-  const countPatterns = kind === "pytest"
-    ? [/([\d,]+) passed/i, /([\d,]+) failed/i, /([\d,]+) error/i, /([\d,]+) skipped/i]
-    : [/([\d,]+) passed/i, /([\d,]+) failed/i, /([\d,]+) todo/i];
-  for (const pattern of countPatterns) {
+  const countPatterns: Array<[RegExp, string]> = kind === "pytest"
+    ? [[/([\d,]+) passed/i, "passed"], [/([\d,]+) failed/i, "failed"], [/([\d,]+) error/i, "errors"], [/([\d,]+) skipped/i, "skipped"]]
+    : [[/([\d,]+) passed/i, "passed"], [/([\d,]+) failed/i, "failed"], [/([\d,]+) todo/i, "todo"]];
+  for (const [pattern, label] of countPatterns) {
     const match = text.match(pattern);
-    if (match) counts.push(`${match[1]} ${pattern.source.match(/\\w+/)?.[0] ?? "tests"}`);
+    if (match) counts.push(`${match[1]} ${label}`);
   }
 
   const failures: string[] = [];
