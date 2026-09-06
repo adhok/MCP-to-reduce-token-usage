@@ -14,6 +14,7 @@ test("large generic output is reduced and reports omitted content", async () => 
   assert.ok(result.summaryLineCount < result.originalLineCount);
   assert.match(result.summary, /omitted|truncated/i);
   assert.ok(result.tokenMetadata.estimatedTokensSaved > 0);
+  assert.equal(result.importantOutputTruncated, false);
 });
 
 test("failing commands preserve exit status and error text", async () => {
@@ -24,6 +25,7 @@ test("failing commands preserve exit status and error text", async () => {
   assert.equal(result.exitCode, 7);
   assert.equal(result.timedOut, false);
   assert.match(result.summary, /fatal database connection error/);
+  assert.equal(result.factsPreserved, result.factsDetected);
 });
 
 test("generic summaries preserve critical errors in the middle of noisy output", () => {

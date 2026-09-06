@@ -15,6 +15,10 @@ export interface RunAndSummarizeResult {
     fullOutputKey: string;
     rawOutput: string;
     tokenMetadata: TokenBudgetMetadata;
+    factsDetected: number;
+    factsPreserved: number;
+    factCoverage: number;
+    importantOutputTruncated: boolean;
 }
 type Summary = {
     text: string;

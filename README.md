@@ -129,6 +129,8 @@ Run the reproducible benchmark with:
 
 ```sh
 npm run benchmark:compression
+npm run benchmark:ab
+npm run benchmark:forecasting
 ```
 
 The current fixtures produce these approximate results using the project’s four-characters-per-token estimator:
@@ -136,12 +138,15 @@ The current fixtures produce these approximate results using the project’s fou
 | Scenario | Original | Returned | Estimated saved | Reduction |
 | --- | ---: | ---: | ---: | ---: |
 | 1,000-line generic command output | 8,974 | 362 | 8,612 | 95.97% |
+| Raw-vs-compressed A/B command benchmark | 8,974 | 152 | 8,822 | 98.31% |
 | Pytest failure summary | 45 | 22 | 23 | 51.67% |
-| Nixtla StatsForecast CV + forecast output (223 lines) | 3,406 | 448 | 2,958 | 86.85% |
+| Nixtla StatsForecast CV + forecast output (223 lines) | 3,406 | 79 | 3,327 | 97.68% |
 | Noisy pipeline with critical error in the middle (200 lines) | 1,035 | 129 | 906 | 87.54% |
 
-The forecasting scenario uses 540 observations across 3 series, AutoARIMA and Naive models, four rolling cross-validation windows, and a 14-day forecast horizon. Its formal test verifies that the compressed result preserves model metrics, the best model, CV settings, forecast row count, and pipeline status—not just the first and last rows. The measured run used verbose cross-validation and forecast tables; the compact pipeline-only output is intentionally much smaller and therefore has less compression to perform.
+The forecasting scenario uses 540 observations across 3 series, AutoARIMA and Naive models, four rolling cross-validation windows, and a 14-day forecast horizon. The measured run used verbose cross-validation and forecast tables. The summarizer returned 79 estimated tokens while preserving all 6 detected facts, including model metrics, the best model, CV settings, forecast row count, and pipeline status. The compact pipeline-only output is intentionally much smaller and therefore has less compression to perform.
 
 The noisy-pipeline test is intentionally adversarial: the only critical database error is placed in the middle of 200 routine log lines. The test verifies that the error and its detail survive compression while 87.54% of estimated tokens are removed.
 
 These are MCP response-size estimates, not OpenAI, Gemini, or Claude billing measurements. Actual provider usage must be verified with an A/B comparison of the same task with and without the MCP.
+
+`benchmark:forecasting` runs the real optional StatsForecast pipeline in `scripts/benchmark-forecasting.py`; install `numpy`, `pandas`, and `statsforecast` in the active Python environment first. `benchmark:ab` compares the raw command result with the compact MCP response and reports fact coverage.

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { installForAntigravity, installForClaudeCode } from "../dist/installer.js";
@@ -29,6 +29,11 @@ try {
 
   const content2 = JSON.parse(readFileSync(claudeConfig, "utf8"));
   assert.ok(content2.mcpServers["token-saver-mcp"], "token-saver-mcp key should exist");
+
+  const malformedConfig = join(testDir, "malformed.json");
+  writeFileSync(malformedConfig, "not json", "utf8");
+  assert.equal(installForClaudeCode(malformedConfig), false, "malformed config should be rejected");
+  assert.equal(readFileSync(malformedConfig, "utf8"), "not json", "malformed config should not be overwritten");
 
   console.log("Installer unit tests passed!");
 } finally {

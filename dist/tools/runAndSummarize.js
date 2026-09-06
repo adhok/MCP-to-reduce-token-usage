@@ -22,6 +22,19 @@ const linesOf = (text) => {
         lines.pop();
     return text.length === 0 ? [] : lines;
 };
+function factMetadata(rawOutput, summary) {
+    const facts = [...new Set(linesOf(rawOutput)
+            .map((line) => line.trim())
+            .filter((line) => /\b(?:error|failed|failure|warning|exception|traceback|fatal|panic)\b/i.test(line)
+            || /(?:PIPELINE_STATUS|MAE\s*=|RMSE\s*=|Best model:|Cross-validation rows:|Forecast rows:|\d+[\d,]*\s+(?:passed|failed|skipped|errors?))/i.test(line)))];
+    const preserved = facts.filter((fact) => summary.includes(fact)).length;
+    return {
+        factsDetected: facts.length,
+        factsPreserved: preserved,
+        factCoverage: facts.length === 0 ? 1 : Math.round((preserved / facts.length) * 10000) / 10000,
+        importantOutputTruncated: preserved < facts.length,
+    };
+}
 function genericSummary(lines) {
     if (lines.length < 50)
         return { text: lines.join("\n"), wasSummarized: false };
@@ -164,6 +177,7 @@ export async function runAndSummarize({ command, cwd = process.cwd(), timeoutMs 
         : summarizeOutput(command, rawOutput);
     const summary = applyTokenBudget(result.text, maxTokens);
     const outputLines = linesOf(summary);
+    const facts = factMetadata(rawOutput, summary);
     return {
         exitCode: timedOut ? null : exitCode,
         timedOut,
@@ -174,5 +188,6 @@ export async function runAndSummarize({ command, cwd = process.cwd(), timeoutMs 
         fullOutputKey: key,
         rawOutput,
         tokenMetadata: tokenMetadata(rawOutput, summary, maxTokens),
+        ...facts,
     };
 }

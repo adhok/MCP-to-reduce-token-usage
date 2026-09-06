@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { execFileSync, execSync } from "node:child_process";
@@ -38,6 +39,35 @@ function configPaths() {
     claudeCode: process.env.TOKEN_SAVER_CLAUDE_CONFIG || join(userHome, ".claude.json"),
     codex: process.env.TOKEN_SAVER_CODEX_CONFIG || join(userHome, ".codex", "mcp.json"),
   };
+}
+
+function writeJsonAtomically(configPath: string, configData: unknown): void {
+  const temporaryPath = `${configPath}.${randomUUID()}.tmp`;
+  try {
+    writeFileSync(temporaryPath, `${JSON.stringify(configData, null, 2)}\n`, "utf8");
+    renameSync(temporaryPath, configPath);
+  } catch (error) {
+    try {
+      if (existsSync(temporaryPath)) unlinkSync(temporaryPath);
+    } catch {
+      // Preserve the original error if cleanup is not possible.
+    }
+    throw error;
+  }
+}
+
+function readConfig(configPath: string): { mcpServers?: Record<string, unknown> } {
+  if (!existsSync(configPath)) return {};
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(configPath, "utf8"));
+  } catch {
+    throw new Error(`Existing configuration is not valid JSON; refusing to overwrite: ${configPath}`);
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`Existing configuration must be a JSON object; refusing to overwrite: ${configPath}`);
+  }
+  return parsed as { mcpServers?: Record<string, unknown> };
 }
 
 export function runInstaller(options: InstallOptions): boolean {
@@ -176,14 +206,7 @@ export function installForAntigravity(customConfigPath?: string): boolean {
       mkdirSync(configDir, { recursive: true });
     }
 
-    let configData: { mcpServers?: Record<string, unknown> } = {};
-    if (existsSync(configPath)) {
-      try {
-        configData = JSON.parse(readFileSync(configPath, "utf8"));
-      } catch {
-        configData = {};
-      }
-    }
+    const configData = readConfig(configPath);
 
     if (!configData.mcpServers || typeof configData.mcpServers !== "object") {
       configData.mcpServers = {};
@@ -195,7 +218,7 @@ export function installForAntigravity(customConfigPath?: string): boolean {
       args,
     };
 
-    writeFileSync(configPath, JSON.stringify(configData, null, 2), "utf8");
+    writeJsonAtomically(configPath, configData);
     console.log("  [SUCCESS] Antigravity MCP config updated successfully.");
     return true;
   } catch (err: unknown) {
@@ -214,14 +237,7 @@ export function installForClaudeCode(customConfigPath?: string): boolean {
       mkdirSync(configDir, { recursive: true });
     }
 
-    let configData: { mcpServers?: Record<string, unknown> } = {};
-    if (existsSync(configPath)) {
-      try {
-        configData = JSON.parse(readFileSync(configPath, "utf8"));
-      } catch {
-        configData = {};
-      }
-    }
+    const configData = readConfig(configPath);
 
     if (!configData.mcpServers || typeof configData.mcpServers !== "object") {
       configData.mcpServers = {};
@@ -233,7 +249,7 @@ export function installForClaudeCode(customConfigPath?: string): boolean {
       args,
     };
 
-    writeFileSync(configPath, JSON.stringify(configData, null, 2), "utf8");
+    writeJsonAtomically(configPath, configData);
     console.log("  [SUCCESS] Claude Code MCP config updated successfully.");
     return true;
   } catch (err: unknown) {
@@ -258,14 +274,7 @@ export function installForCodex(): boolean {
       if (!existsSync(configDir)) {
         mkdirSync(configDir, { recursive: true });
       }
-      let configData: { mcpServers?: Record<string, unknown> } = {};
-      if (existsSync(codexConfigPath)) {
-        try {
-          configData = JSON.parse(readFileSync(codexConfigPath, "utf8"));
-        } catch {
-          configData = {};
-        }
-      }
+      const configData = readConfig(codexConfigPath);
       if (!configData.mcpServers || typeof configData.mcpServers !== "object") {
         configData.mcpServers = {};
       }
@@ -273,7 +282,7 @@ export function installForCodex(): boolean {
         command,
         args,
       };
-      writeFileSync(codexConfigPath, JSON.stringify(configData, null, 2), "utf8");
+      writeJsonAtomically(codexConfigPath, configData);
       console.log(`  [SUCCESS] Updated Codex config directly at ${codexConfigPath}.`);
       return true;
     } catch (err: unknown) {

@@ -13,6 +13,8 @@
   "scripts": {
     "build": "tsc",
     "benchmark:compression": "npm run build && node scripts/benchmark-compression.mjs",
+    "benchmark:ab": "npm run build && node scripts/benchmark-ab.mjs",
+    "benchmark:forecasting": "npm run build && node scripts/benchmark-forecasting.mjs",
     "test:unit": "npm run build && node --test test/*.test.mjs",
     "test": "npm run test:unit && node scripts/test-validation.mjs && node scripts/test-cache.mjs && node scripts/test-token-budget.mjs && node scripts/test-run-and-summarize.mjs && node scripts/test-read-relevant.mjs && node scripts/test-code-search.mjs && node scripts/test-ast-parser.mjs && node scripts/test-installer.mjs && node scripts/test-session-stats.mjs",
     "start": "node dist/server.js",
