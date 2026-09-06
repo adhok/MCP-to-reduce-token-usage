@@ -86,6 +86,13 @@ function eslintSummary(lines) {
         ? { text: violations.join("\n"), wasSummarized: true }
         : genericSummary(lines);
 }
+function forecastingSummary(lines) {
+    const important = lines.filter((line) => /^(?:Loaded |Models:|Running rolling-origin|Cross-validation rows:|Forecast rows:|PIPELINE_STATUS=|Best model:|.*(?:MAE|RMSE)=)/i.test(line.trim()));
+    const result = [...new Set(important)];
+    return result.length >= 2
+        ? { text: result.join("\n"), wasSummarized: true }
+        : genericSummary(lines);
+}
 export function summarizeOutput(command, output) {
     const lines = linesOf(output);
     const commandName = command.toLowerCase();
@@ -97,6 +104,8 @@ export function summarizeOutput(command, output) {
         return tscSummary(lines);
     if (/\beslint(?:\.js)?(?:\s|$)/.test(commandName))
         return eslintSummary(lines);
+    if (/(?:forecast|cross.?validation|statsforecast|nixtla)/i.test(commandName) || lines.some((line) => /PIPELINE_STATUS=.*|Cross-validation rows:|Forecast rows:/i.test(line)))
+        return forecastingSummary(lines);
     return genericSummary(lines);
 }
 export async function runAndSummarize({ command, cwd = process.cwd(), timeoutMs = 60000, maxTokens }) {
