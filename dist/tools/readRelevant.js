@@ -31,6 +31,17 @@ export async function readRelevant({ filePath, query, contextLines = 2, maxToken
             tokenMetadata: tokenMetadata(source, content, maxTokens),
         };
     }
+    if (query === "*") {
+        const content = applyTokenBudget(source, maxTokens);
+        const symbols = parsed.symbols.map(({ name, kind, startLine, endLine }) => ({ name, kind, startLine, endLine }));
+        return {
+            matched: true,
+            symbols,
+            content,
+            totalFileLines,
+            tokenMetadata: tokenMetadata(source, content, maxTokens),
+        };
+    }
     const normalizedQuery = query.toLowerCase();
     const symbol = parsed.symbols.find(({ name }) => name.toLowerCase().includes(normalizedQuery));
     if (symbol) {

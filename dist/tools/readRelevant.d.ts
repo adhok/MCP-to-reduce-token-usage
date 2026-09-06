@@ -11,8 +11,22 @@ export declare function readRelevant({ filePath, query, contextLines, maxTokens,
     content: string;
     totalFileLines: number;
     tokenMetadata: import("../index/tokenBudget.js").TokenBudgetMetadata;
-    symbol?: undefined;
     symbols?: undefined;
+    symbol?: undefined;
+} | {
+    matched: boolean;
+    symbols: {
+        name: string;
+        kind: "function" | "class" | "method" | "interface" | "type" | "variable";
+        startLine: number;
+        endLine: number;
+    }[];
+    content: string;
+    totalFileLines: number;
+    tokenMetadata: import("../index/tokenBudget.js").TokenBudgetMetadata;
+    astAvailable?: undefined;
+    note?: undefined;
+    symbol?: undefined;
 } | {
     matched: boolean;
     symbol: {
