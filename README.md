@@ -120,3 +120,20 @@ npm test
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development conventions and [RELEASE.md](RELEASE.md) for publishing instructions.
 
 The test suite uses Node’s built-in test runner and includes scenarios for large-output reduction, failure preservation, session accounting, and installation diagnostics.
+
+### Compression results
+
+Run the reproducible benchmark with:
+
+```sh
+npm run benchmark:compression
+```
+
+The current fixtures produce these approximate results using the project’s four-characters-per-token estimator:
+
+| Scenario | Original | Returned | Estimated saved | Reduction |
+| --- | ---: | ---: | ---: | ---: |
+| 1,000-line generic command output | 8,974 | 362 | 8,612 | 95.97% |
+| Pytest failure summary | 45 | 22 | 23 | 51.67% |
+
+These are MCP response-size estimates, not OpenAI, Gemini, or Claude billing measurements. Actual provider usage must be verified with an A/B comparison of the same task with and without the MCP.
