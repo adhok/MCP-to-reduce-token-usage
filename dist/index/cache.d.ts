@@ -2,6 +2,7 @@ export declare class SessionCache {
     private readonly db;
     private readonly ttlMs;
     constructor(dbPath?: string);
+    private static defaultDbPath;
     private static readTtl;
     get(key: string): {
         hit: boolean;

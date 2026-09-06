@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
+import { homedir } from "node:os";
 import Database from "better-sqlite3";
 
 const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -9,7 +10,7 @@ export class SessionCache {
   private readonly db: Database.Database;
   private readonly ttlMs: number;
 
-  constructor(dbPath = resolve(process.env.TOKEN_SAVER_CACHE_DIR ?? resolve(process.cwd(), ".token-saver-cache"), "session.db")) {
+  constructor(dbPath = SessionCache.defaultDbPath()) {
     this.ttlMs = SessionCache.readTtl();
     mkdirSync(dirname(dbPath), { recursive: true });
     this.db = new Database(dbPath);
@@ -24,6 +25,14 @@ export class SessionCache {
       )
     `);
     this.prune();
+  }
+
+  private static defaultDbPath(): string {
+    const configured = process.env.TOKEN_SAVER_CACHE_DIR;
+    const cacheRoot = configured
+      ? (isAbsolute(configured) ? configured : resolve(homedir(), configured))
+      : join(homedir(), ".cache", "token-saver-mcp");
+    return resolve(cacheRoot, "session.db");
   }
 
   private static readTtl(): number {

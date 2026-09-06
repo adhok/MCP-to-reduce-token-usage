@@ -105,6 +105,8 @@ The server does not rewrite context already sent to a model. The coding tool cho
 
 Token counts are approximate, based on roughly four characters per token. AST extraction currently supports TypeScript, JavaScript, and Python.
 
+Full command output is cached locally under the user’s home cache directory. Set `TOKEN_SAVER_CACHE_DIR` to choose another location. The cache may contain command output and local paths.
+
 ## Security
 
 This server is intended for trusted local use. `run_command` executes shell commands with the server process’s permissions, and the file tools can read any path the process can read. Cached output may contain secrets. Do not expose the server remotely without authentication, isolation, workspace restrictions, command restrictions, and cache protection.
