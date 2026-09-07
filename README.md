@@ -6,6 +6,10 @@ An MCP server that helps coding agents use less context when working with comman
 
 It provides compact command summaries, focused file reads, ranked code search, AST-aware context, and cached full output when needed.
 
+## Requirements
+
+Node.js >= 22. `better-sqlite3` ships a prebuilt native binding that requires Node's N-API v10, introduced in Node 22; running on Node 20 does not raise a normal error — it crashes the process (access violation / segfault) as soon as the cache database is opened, which shows up as the MCP client reporting the server as disconnected with no useful log output. Run `node --version` and upgrade if it reports a version below 22.
+
 ## Quick start
 
 This repository is not currently published to npm. Install it locally:
