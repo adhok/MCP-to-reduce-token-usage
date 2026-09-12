@@ -69,6 +69,15 @@ const server = new Server(
   },
 );
 
+function withSessionStatsFooter<T extends object>(response: T): T & { sessionTokensSaved: number; sessionSavingsPercent: number } {
+  const snapshot = sessionStats.snapshot();
+  return {
+    ...response,
+    sessionTokensSaved: snapshot.netEstimatedTokensSaved,
+    sessionSavingsPercent: snapshot.netSavingsPercent,
+  };
+}
+
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
@@ -185,7 +194,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { rawOutput: _rawOutput, ...response } = result;
     cache.set(result.fullOutputKey, result.rawOutput, result.summary);
     sessionStats.record("run_command", result.tokenMetadata);
-    return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    return { content: [{ type: "text", text: JSON.stringify(withSessionStatsFooter(response)) }] };
   }
 
   if (request.params.name === "get_full_output") {
@@ -196,7 +205,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const fullOutput = cache.getFullContent(args.fullOutputKey);
     if (fullOutput === undefined) throw new Error(`No cached output found for key: ${args.fullOutputKey}`);
     sessionStats.recordFullOutput(fullOutput);
-    return { content: [{ type: "text", text: fullOutput }] };
+    const snapshot = sessionStats.snapshot();
+    return {
+      content: [
+        { type: "text", text: fullOutput },
+        {
+          type: "text",
+          text: JSON.stringify({
+            sessionTokensSaved: snapshot.netEstimatedTokensSaved,
+            sessionSavingsPercent: snapshot.netSavingsPercent,
+          }),
+        },
+      ],
+    };
   }
 
   if (request.params.name === "cache_stats") {
@@ -229,14 +250,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const args = (request.params.arguments ?? {}) as { filePath: string; query: string; contextLines?: number; maxTokens?: number };
     const result = await readRelevant(args);
     sessionStats.record("read_relevant", result.tokenMetadata);
-    return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    return { content: [{ type: "text", text: JSON.stringify(withSessionStatsFooter(result)) }] };
   }
 
   if (request.params.name === "code_search") {
     const args = (request.params.arguments ?? {}) as { query: string; directory?: string; filePattern?: string; maxResults?: number; maxTokens?: number };
     const result = await codeSearch(args);
     sessionStats.record("code_search", result.tokenMetadata);
-    return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    return { content: [{ type: "text", text: JSON.stringify(withSessionStatsFooter(result)) }] };
   }
 
   if (request.params.name !== "ping") {
